@@ -50,11 +50,11 @@ namespace Muon {
     int    MultiLayer        (int layer) const;
     int    GetRunN           () const;
 
-    static const Int_t MAX_TDC         = 24;
+    static const Int_t MAX_TDC         = 18;
     static const Int_t MAX_TDC_CHANNEL = 24;
     static const Int_t MAX_TUBE_LAYER  =  8;
-    static const Int_t MAX_TUBE_COLUMN = 72;
-    static const Int_t MAX_TDC_COLUMN  =  12;
+    static const Int_t MAX_TUBE_COLUMN = 54;
+    static const Int_t MAX_TDC_COLUMN  =  6;
     static const Int_t MAX_TDC_LAYER   =  4;
 
     static constexpr Double_t layer_distance  = 13.0769836;
@@ -359,41 +359,32 @@ namespace Muon {
  //      isActiveTDC[10] = 1;
  //    }
 //  8  9
-// //  7  1
-//       // TDC_ML[7]  = 0;
-//       TDC_ML[0]  = 0;
-//       TDC_ML[1]  = 1;
-//       TDC_ML[2]  = 0;
-//       // TDC_ML[8]  = 1;
-//       TDC_ML[3]  = 1;
+//  7  1
+      // TDC_ML[7]  = 0;
+      TDC_ML[0]  = 0;
+      TDC_ML[1]  = 1;
+      TDC_ML[2]  = 0;
+      // TDC_ML[8]  = 1;
+      TDC_ML[3]  = 1;
 
 
-//       // TDC_COL[7]  = 1;
-//       TDC_COL[0]  = 0;
-//       TDC_COL[1]  = 0;
-//       // TDC_COL[8]  = 1;
-//       TDC_COL[2]  = 1;
-//       TDC_COL[3]  = 1;
+      // TDC_COL[7]  = 1;
+      TDC_COL[0]  = 0;
+      TDC_COL[1]  = 0;
+      // TDC_COL[8]  = 1;
+      TDC_COL[2]  = 1;
+      TDC_COL[3]  = 1;
 
-//       isActiveTDC.reset();
-//       isActiveTDC[0] = 1;
-//       isActiveTDC[1] = 1;
-//       isActiveTDC[2] = 1;
-//       isActiveTDC[3] = 1;
+      isActiveTDC.reset();
+      isActiveTDC[0] = 1;
+      isActiveTDC[1] = 1;
+      isActiveTDC[2] = 1;
+      isActiveTDC[3] = 1;
 //       isActiveTDC[4] = 1;
 //       isActiveTDC[5] = 1;
 //       isActiveTDC[6] = 1;
 //       isActiveTDC[7] = 1;
       // isActiveTDC[8]  = 1;
-      isActiveTDC.reset();
-      for (int i = 0; i < 20; ++i)
-      {
-        isActiveTDC[i]  = 1;
-        TDC_ML[i]  = i%2;
-        TDC_COL[i] = i/2*6;
-      }
-      isActiveTDC[0] = 0;
-      isActiveTDC[1] = 0;
 
     
     ResetAdjacencyMatrix();
@@ -402,4 +393,3 @@ namespace Muon {
 }
 
 #endif
-

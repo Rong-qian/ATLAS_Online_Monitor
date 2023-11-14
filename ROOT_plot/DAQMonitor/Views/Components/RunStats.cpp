@@ -11,20 +11,10 @@
 
 #include <string>
 
-#include "DAQMonitor/Views/Components/PairTable.cpp"
-
-#include "macros/ErrorLogger.cpp"
-#include "macros/UIFramework/UISignals.cpp"
-
-#include "src/DataModel/DAQData.cpp"
-
 using namespace std;
 
 // TODO: Examine this example:
 //       https://root.cern/doc/master/calendar_8C.html
-
-// TODO: See about reorganizing logic and dependencies, keeping with the
-//       view vs operations pattern I've been following
 
 class RunStats : public TGVerticalFrame {
 
@@ -34,94 +24,92 @@ public:
 		const TGWindow *parent
 	);
 
-	void update();
-
-	void teardown();
-
 private:
-
-	// DATA
-
-	PairTable statsTable;
 
 	// VIEW
 
+	TGHorizontalFrame *packetCounter;
+		TGLabel *packetCountLabel;
+		TGLabel *packetCount;
+
+	TGHorizontalFrame *signalCounter;
+		TGLabel *signalCountLabel;
+		TGLabel *signalCount;
+
+	TGHorizontalFrame *eventCounter;
+		TGLabel *eventCountLabel;
+		TGLabel *eventCount;
+
+	TGHorizontalFrame *nonemptyEventCounter;
+		TGLabel *nonemptyEventCountLabel;
+		TGLabel *nonemptyEventCount;
+
+	TGHorizontalFrame *errorCounter;
+		TGLabel *errorCountLabel;
+		TGLabel *errorCount;
+
 	TGHtml *table;
-
-	// CONNECTIONS
-
-	void makeConnections();
 
 };
 
-void RunStats::makeConnections() {
-
-	UISignalBus::getInstance().Connect(
-    	"onUpdate()", 
-    	"RunStats", 
-    	this,
-    	"update()"
-    );
-
-}
-
 RunStats::RunStats(
 	const TGWindow *parent
-) : TGVerticalFrame(parent, 100, 220, kVerticalFrame | kFixedSize) {
+) : TGVerticalFrame(parent) {
 
+	/*
+	packetCounter = new TGHorizontalFrame(this);
+	AddFrame(packetCounter, new TGLayoutHints(kLHintsCenterX));
+
+		packetCountLabel = new TGLabel(packetCounter, "Packets Recorded:  ");
+		packetCounter->AddFrame(packetCountLabel, new TGLayoutHints(kLHintsLeft));
+
+		packetCount = new TGLabel(packetCounter, "UNIMPLEMENTED");
+		packetCounter->AddFrame(packetCount, new TGLayoutHints(kLHintsRight));
+
+	signalCounter = new TGHorizontalFrame(this);
+	AddFrame(signalCounter, new TGLayoutHints(kLHintsCenterX));
+
+		signalCountLabel = new TGLabel(signalCounter, "Processed Signals:  ");
+		signalCounter->AddFrame(signalCountLabel, new TGLayoutHints(kLHintsLeft));
+
+		signalCount = new TGLabel(signalCounter, "UNIMPLEMENTED");
+		signalCounter->AddFrame(signalCount, new TGLayoutHints(kLHintsRight));
+
+	eventCounter = new TGHorizontalFrame(this);
+	AddFrame(eventCounter, new TGLayoutHints(kLHintsCenterX));
+
+		eventCountLabel = new TGLabel(eventCounter, "Processed Events:  ");
+		eventCounter->AddFrame(eventCountLabel, new TGLayoutHints(kLHintsLeft));
+
+		eventCount = new TGLabel(eventCounter, "UNIMPLEMENTED");
+		eventCounter->AddFrame(eventCount, new TGLayoutHints(kLHintsRight));
+
+	nonemptyEventCounter = new TGHorizontalFrame(this);
+	AddFrame(nonemptyEventCounter, new TGLayoutHints(kLHintsCenterX));
+
+		nonemptyEventCountLabel = new TGLabel(nonemptyEventCounter, "Processed Nonempty Events:  ");
+		nonemptyEventCounter->AddFrame(nonemptyEventCountLabel, new TGLayoutHints(kLHintsLeft));
+
+		nonemptyEventCount = new TGLabel(nonemptyEventCounter, "UNIMPLEMENTED");
+		nonemptyEventCounter->AddFrame(nonemptyEventCount, new TGLayoutHints(kLHintsRight));
+
+	errorCounter = new TGHorizontalFrame(this);
+	AddFrame(errorCounter, new TGLayoutHints(kLHintsCenterX));
+
+		errorCountLabel = new TGLabel(errorCounter, "Errors:  ");
+		errorCounter->AddFrame(errorCountLabel, new TGLayoutHints(kLHintsLeft));
+
+		errorCount = new TGLabel(errorCounter, "UNIMPLEMENTED");
+		errorCounter->AddFrame(errorCount, new TGLayoutHints(kLHintsRight));
+	*/
 	table = new TGHtml(this, 100, 100);
-	AddFrame(table, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+	AddFrame(table, new TGLayoutHints(/*kLHintsExpandX | kLHintsExpandY*/kLHintsCenterX));
 
-	makeConnections();
+	table->Clear();
 
-	update();
+	char htmlText[256] = "<TABLE width=100%><TBODY><TR><TH>One</TH><TH>Two</TH></TR></TBODY></TABLE>";
+	table->ParseText(htmlText);
 
-}
-
-void RunStats::update() {
-
-	DAQData &data = DAQData::getInstance();
-	ErrorLogger &logger = ErrorLogger::getInstance();
-
-	data.lock();
-	statsTable.setEntry("Packets Recorded", to_string(data.packetCount));
-	statsTable.setEntry("Events Processed", to_string(data.totalEventCount));
-	statsTable.setEntry("Empty Events", to_string(data.totalEventCount - data.processedEvents.size()));
-	statsTable.setEntry("Error Count", to_string(logger.countErrors(EMPTY_TYPE, ERROR)));
-	statsTable.setEntry("Warning Count", to_string(logger.countErrors(EMPTY_TYPE, WARNING)));
-	statsTable.setEntry("Packets Lost", to_string(data.lostPackets));
-	statsTable.setEntry("Dropped Signals", to_string(data.droppedSignals));
-	statsTable.setEntry("Dropped Events", to_string(data.droppedEvents));
-	data.unlock();
-
-	char *htmlText = new char[statsTable.stringify().size() + 1];
-
-	try{
-
-		strcpy(htmlText, statsTable.stringify().data());
-
-		table->Clear();
-
-		table->ParseText(htmlText);
-
-		table->Layout();
-
-	} catch (exception &e) {
-
-		delete[] htmlText;
-		htmlText = nullptr;
-
-		throw e;
-
-	}
-
-	delete[] htmlText;
-	htmlText = nullptr;
-
-}
-
-void RunStats::teardown() {
-
-	UISignalBus::getInstance().Disconnect("onUpdate()", this, "update()");
+	table->Layout();
 
 }

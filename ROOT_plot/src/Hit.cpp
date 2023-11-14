@@ -20,6 +20,7 @@ namespace Muon {
     int        TDC      () const;
     int        Channel  () const;
     void       Draw     () override;     
+    static double     RadiusError(double radius);     
   private:
     double     tdctime;
     double     adctime;
@@ -53,6 +54,8 @@ namespace Muon {
   double Hit::CorrTime()  const{return corrTime;}
   int    Hit::TDC()       const{return tdc;}
   int    Hit::Channel()   const{return chan;}  
+  static double RadiusError(double radius);  
+
   void   Hit::Draw()           {}
   
   // double Hit::TimeError() {
@@ -62,7 +65,7 @@ namespace Muon {
   //     return 0.11-corrTime/3.0;
   // }
 
-  // double Hit::RadiusError(double radius) {
+  double Hit::RadiusError(double radius) {
 
   //   /*
   //   if (radius <3.5) 
@@ -78,8 +81,8 @@ namespace Muon {
   //   //return .256-.081*radius+0.00856*radius*radius;
     
   //   // nominal resolution:
-  //   return .226-0.025*radius+0.001248*radius*radius;
-  // }
+     return .226-0.025*radius+0.001248*radius*radius;
+  }
 
   // void Hit::SetRadius(double r) {
   //   radius = r;

@@ -27,9 +27,9 @@ namespace Muon {
 
   class TrackParam : public Optimizer, virtual public Parameterization {
   public:
-    TrackParam(Geometry g);
+    TrackParam();
     ~TrackParam();
-
+    void     SetGEO     (Geometry* g);
     void     SetRT     (Callable* rtp);
     void     Initialize(Event *e)         override;
     void     Print     ();
@@ -37,6 +37,7 @@ namespace Muon {
     double   D         (int index, Hit h) override;
     double   Residual  (Hit h)            override;
     double   Distance  (Hit h)            override;
+    double   Distance_XY(double hitX, double hitY);
 
     Double_t LegendreLowerCurve(Double_t theta, Double_t x_0, Double_t y_0, Double_t r_0);
     Double_t LegendreUpperCurve(Double_t theta, Double_t x_0, Double_t y_0, Double_t r_0);
@@ -55,15 +56,17 @@ namespace Muon {
     friend class ResolutionResult;
   };
 
-  TrackParam::TrackParam(Geometry g) : Optimizer(), Parameterization(2) {
-    geo = &g;
+  TrackParam::TrackParam() : Optimizer(), Parameterization(2) {
     param[SLOPE]     = 1;
     param[INTERCEPT] = 1;
   }
 
   TrackParam::~TrackParam() {
   }
-  
+
+  void TrackParam::SetGEO(Geometry* g) {
+    geo = g;
+  }
   void TrackParam::SetRT(Callable* rtp) {
     rtfunction = rtp;
   }
@@ -105,7 +108,11 @@ namespace Muon {
   double TrackParam::Distance(Hit h) {
     double hitX, hitY;
     geo->GetHitXY(h.TDC(), h.Channel(), &hitX, &hitY);
+    return TMath::Abs(hitX*param[SLOPE] + param[INTERCEPT] - hitY)/TMath::Sqrt(param[SLOPE]*param[SLOPE] + 1);
+  }
 
+
+  double TrackParam::Distance_XY(double hitX, double hitY) {
     return TMath::Abs(hitX*param[SLOPE] + param[INTERCEPT] - hitY)/TMath::Sqrt(param[SLOPE]*param[SLOPE] + 1);
   }
   /*

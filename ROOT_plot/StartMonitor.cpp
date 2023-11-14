@@ -28,8 +28,8 @@
 #include "macros/ErrorLogger.cpp"
 
 #include "DAQMonitor/PacketDecoding/src/Decoder.cpp"
-#include "DAQMonitor/EthernetCapture/src/DeviceSelector.cpp"
-#include "DAQMonitor/EthernetCapture/src/PCapSessionHandler.cpp"
+//#include "DAQMonitor/EthernetCapture/src/DeviceSelector.cpp"
+//#include "DAQMonitor/EthernetCapture/src/PCapSessionHandler.cpp"
 
 #include "src/Geometry.cpp"
 #include "src/ProgramControl/Terminator.cpp"
@@ -85,9 +85,7 @@ void StartMonitor(const string &filename = "") {
 			fileStream = nullptr;
 
 			ErrorLogger::getInstance().logError(
-				string("Couldn't open file ") + filename,
-				"dataCapture",
-				FATAL
+				string("Couldn't open file ") + filename
 			);
 
 			cout << "Aborted run!" << endl;
@@ -103,11 +101,11 @@ void StartMonitor(const string &filename = "") {
 	//////////////////////////// DATA CAPTURE /////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
-	DeviceManager      devices       ;
-	PCapSessionHandler sessionHandler;
+	//DeviceManager      devices       ;
+	//PCapSessionHandler sessionHandler;
 
 	if(filename == "") {
-
+		/*
 		try {
 
 			devices.initialize();
@@ -116,19 +114,19 @@ void StartMonitor(const string &filename = "") {
 
 			sessionHandler.initializeSession(networkDevice);
 
-			// Sets the handler to notify the user when a packet is lost
+			 Sets the handler to notify the user when a packet is lost
 			sessionHandler.setCheckPackets(true);
 
 		} catch(NetworkDeviceException &e) {
 
-			ErrorLogger::getInstance().logError(e.what(), "dataCapture", FATAL);
+			ErrorLogger::getInstance().logError(e.what());
 			cout << "Aborted run!" << endl;
 			return 1; // NOTE: We don't call the terminator here because we
 			          //       don't need to close down any threads and we
 			          //       want the program to exit immediately.
 
 		}
-
+		*/
 	}
 
 	// THIS MUST BE CALLED BEFORE STARTING ANY THREADS.
@@ -139,8 +137,9 @@ void StartMonitor(const string &filename = "") {
 	setTerminationHandlers(flagForTermination);
 
 	DAQData &data = DAQData::getInstance();
-	MonitorHooks::beforeStartRun(data);
 
+	MonitorHooks::beforeStartRun(data);
+	/*
 	thread dataCaptureThread([&sessionHandler, &dataStream]() {
 
 		// End the thread if the session handler isn't ready, which means
@@ -149,7 +148,7 @@ void StartMonitor(const string &filename = "") {
 
 		string runTimestamp = getCurrentTimestamp("%Y%m%d_%H%M%S");
 
-		cout << endl << "Starting run: " << runTimestamp << endl; 
+		cout << endl << "Starting run: " << runTimestamp << endl; // TODO: Add the run number to this
 
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
@@ -165,16 +164,14 @@ void StartMonitor(const string &filename = "") {
 		if(!fileWriter.is_open()) {
 
 			ErrorLogger::getInstance().logError(
-				string("Failed to open output file: ") + outputFile,
-				"dataCapture",
-				FATAL
+				string("Failed to open output file: ") + outputFile
 			);
 			cout << "Aborted run!" << endl;
 			Terminator::getInstance().terminate();
 			return;
 
 		}
-
+	
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
@@ -209,7 +206,7 @@ void StartMonitor(const string &filename = "") {
 		cout << packets << " packets recorded." << endl;
 
 	});
-
+	*/
 	///////////////////////////////////////////////////////////////////////////
 	/////////////////////////// DATA PROCESSING ///////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -250,7 +247,7 @@ void StartMonitor(const string &filename = "") {
 	MonitorHooks::startedRun(data);
 
 	decodeThread     .join();
-	dataCaptureThread.join();
+	//dataCaptureThread.join();
 
 	MonitorHooks::finishedRun(data);
 

@@ -20,7 +20,8 @@
 #include "src/HitFinder.cpp"
 #include "src/TimeCorrection.cpp"
 
-const string EVENT_ERROR = "event" ;
+const string EVENT_ERROR = "eventErr" ;
+const string EVENT_WARN  = "eventWarn";
 
 Event assembleEvent        (      vector<Signal>  signals);
 bool  validateEventErrors  (const Event          &e      );
@@ -60,8 +61,7 @@ bool validateEventErrors(const Event &e) {
 
 		logger.logError(
 			"ERROR -- Found event with no header",
-			EVENT_ERROR,
-			ERROR
+			EVENT_ERROR
 		);
 
 		return false;
@@ -72,8 +72,7 @@ bool validateEventErrors(const Event &e) {
 
 		logger.logError(
 			"ERROR -- Found event with no trailer",
-			EVENT_ERROR,
-			ERROR
+			EVENT_ERROR
 		);
 
 		return false;
@@ -84,8 +83,7 @@ bool validateEventErrors(const Event &e) {
 
 		logger.logError(
 			"ERROR -- Found event with mismatched event IDs",
-			EVENT_ERROR,
-			ERROR
+			EVENT_ERROR
 		);
 
 	}
@@ -96,8 +94,7 @@ bool validateEventErrors(const Event &e) {
 
 			logger.logError(
 				"ERROR -- Found event with multiple headers",
-				EVENT_ERROR,
-				ERROR
+				EVENT_ERROR
 			);
 
 			return false;
@@ -108,8 +105,7 @@ bool validateEventErrors(const Event &e) {
 
 			logger.logError(
 				"ERROR -- Found event with multiple trailers",
-				EVENT_ERROR,
-				ERROR
+				EVENT_ERROR
 			);
 
 			return false;
@@ -133,8 +129,7 @@ void validateEventWarnings(const Event &e) {
 			string("WARNING -- Header count error flag. Got ")
 			+ to_string(e.Trailer().TDCHdrCount())
 			+ " header(s)!",
-			EVENT_ERROR,
-			WARNING
+			EVENT_WARN
 		);
 
 	}
@@ -145,8 +140,7 @@ void validateEventWarnings(const Event &e) {
 			string("WARNING -- Trailer count error flag. Got ")
 			+ to_string(e.Trailer().TDCTlrCount())
 			+ " trailer(s)!",
-			EVENT_ERROR,
-			WARNING
+			EVENT_WARN
 		);
 
 	}
@@ -160,7 +154,7 @@ void validateEventWarnings(const Event &e) {
 			+ ", real hit count = "
 			+ to_string(e.Signals().size())
 			+ ", error word count = TODO: IMPLEMENT",
-			EVENT_ERROR
+			EVENT_WARN
 		);
 
 	}
@@ -181,11 +175,10 @@ void validateEventWarnings(const Event &e) {
 		logger.logError(
 			string("WARNING -- ")
 			+ to_string(TDCHeaderCount)
-			+ " TDC header(s) found in data, event trailer indicates "
+			+ " found in data, event trailer indicates "
 			+ to_string(e.Trailer().TDCHdrCount())
 			+ "!",
-			EVENT_ERROR,
-			WARNING
+			EVENT_WARN
 		);
 
 	}
@@ -195,11 +188,10 @@ void validateEventWarnings(const Event &e) {
 		logger.logError(
 			string("WARNING -- ")
 			+ to_string(TDCTrailerCount)
-			+ " TDC trailer(s) found in data, event trailer indicates "
+			+ " found in data, event trailer indicates "
 			+ to_string(e.Trailer().TDCTlrCount())
 			+ "!",
-			EVENT_ERROR,
-			WARNING
+			EVENT_WARN
 		);
 
 	}

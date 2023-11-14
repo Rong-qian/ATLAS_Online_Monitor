@@ -34,11 +34,6 @@ struct DAQData {
     int totalEventCount = 0;
     int packetCount     = 0;
 
-    int lostPackets     = 0;
-
-    int droppedSignals  = 0;
-    int droppedEvents   = 0;
-
     void lock  () const; // Locks an internal mutex
     void unlock() const; // Unlocks an internal mutex
 
@@ -87,10 +82,5 @@ void DAQData::clear () {
 
     totalEventCount = 0;
     packetCount     = 0;
-
-    lostPackets     = 0;
-
-    droppedSignals  = 0;
-    droppedEvents   = 0;
 
 }

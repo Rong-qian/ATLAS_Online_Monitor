@@ -19,6 +19,7 @@ namespace Muon {
     void DrawTubeHistAndEvent (Event &e, Geometry &geo, TH2D* hist, TDirectory* outdir=NULL, Bool_t noROOT=kFALSE);
     void DrawTrackZoom(Event &e, Geometry &geo, int ML, TDirectory* outdir=NULL);
     void SaveCanvas   (TString name, TDirectory* outdir);
+    void SetCanvas    (TCanvas *target_eCanv);
     void Clear        ();
     void SetRT        (RTParam* rtp);
 
@@ -94,21 +95,22 @@ namespace Muon {
     double hit_x, hit_y;
     
     // initialize the canvas and draw the background geometry
-    
-    sprintf(canvas_name, "event_id_%lu", e.ID());
+
+    sprintf(canvas_name, "event_id_%lu", e.Header().HeaderEID());
     strcpy(canvas_output_name, canvas_name);
     strcat(canvas_output_name, ".png");
-    
+
+
     eCanv->cd();
-    
-    geo.Draw(e.ID());
+
+    geo.Draw(e.Header().HeaderEID());
 
 
     
     bitset<Geometry::MAX_TDC*Geometry::MAX_TDC_CHANNEL> wireIsDrawn;
     
     wireIsDrawn.reset();
-    
+
     // draw this event using the highest level avaliable reconstructed objects
     if (e.Tracks().size() != 0) {
       for (Track t : e.Tracks()) {
@@ -132,15 +134,15 @@ namespace Muon {
   }
       }
     }
-    if (e.WireSignals().size() != 0) {
+    if (e.Signals().size() != 0) {
       // draw using signals
-      for (size_t i = 0; i < e.WireSignals().size(); i++) {
-  if (!wireIsDrawn[e.WireSignals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.WireSignals().at(i).Channel()]) {
-    if (e.WireSignals().at(i).Type() == Signal::RISING) {
-      geo.GetHitXY(e.WireSignals().at(i).TDC(), e.WireSignals().at(i).Channel(), &hit_x, &hit_y);
+      for (size_t i = 0; i < e.Signals().size(); i++) {
+  if (!wireIsDrawn[e.Signals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.Signals().at(i).Channel()]) {
+    if (e.Signals().at(i).Type() != Signal::HEADER && e.Signals().at(i).Type() != Signal::TRAILER) {
+      geo.GetHitXY(e.Signals().at(i).TDC(), e.Signals().at(i).Channel(), &hit_x, &hit_y);
       hit_model.push_back(new TEllipse(hit_x, hit_y, Geometry::radius, Geometry::radius));
       hit_model.back()->SetFillColor(kRed);
-      wireIsDrawn[e.WireSignals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.WireSignals().at(i).Channel()] = 1;
+      wireIsDrawn[e.Signals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.Signals().at(i).Channel()] = 1;
     }
   }
       }
@@ -162,7 +164,7 @@ namespace Muon {
       outdir->WriteTObject(eCanv);
       eCanv->SaveAs(canvas_output_name);
     }
-
+    
     
   } // end method: Event Display :: Draw Event
 
@@ -194,7 +196,7 @@ namespace Muon {
     
     TString ml_label;
     ml_label.Form("MultiLayer %d", ML);
-    geo.Draw(e.ID(), xmin, ymin, xmax, ymax, ml_label);
+    geo.Draw(e.Header().HeaderEID(), xmin, ymin, xmax, ymax, ml_label);
 
     for (auto hit : hit_model) {
       hit->Draw();
@@ -208,7 +210,7 @@ namespace Muon {
     if (outdir != NULL) {
       char canvas_name[256];
       char canvas_output_name[256];
-      sprintf(canvas_name, "event_id_%lu", e.ID());
+      sprintf(canvas_name, "event_id_%lu", e.Header().HeaderEID());
       strcpy(canvas_output_name, canvas_name);
       strcat(canvas_output_name, ".png");
       outdir->WriteTObject(eCanv);
@@ -221,7 +223,9 @@ namespace Muon {
   void EventDisplay::SaveCanvas(TString name, TDirectory* outdir) {    
     eCanv->SaveAs(name);
   }
-
+  void EventDisplay::SetCanvas(TCanvas *target_eCanv) {    
+    eCanv = target_eCanv;
+  }
   void EventDisplay::DrawTubeHistAndEvent(Event &e, Geometry &geo, TH2D* hist, TDirectory* outdir=NULL, Bool_t noROOT = kFALSE) {
     if (hist->GetNbinsX() != Geometry::MAX_TUBE_COLUMN || hist->GetNbinsY() != Geometry::MAX_TUBE_LAYER) {
       cout << "EventDisplay::DrawTubeHist"                         << endl;
@@ -302,15 +306,15 @@ namespace Muon {
   }
       }
     }
-    if (e.WireSignals().size() != 0) {
+    if (e.Signals().size() != 0) {
       // draw using signals
-      for (size_t i = 0; i < e.WireSignals().size(); i++) {
-  if (!wireIsDrawn[e.WireSignals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.WireSignals().at(i).Channel()]) {
-    if (e.WireSignals().at(i).Type() == Signal::RISING) {
-      geo.GetHitXY(e.WireSignals().at(i).TDC(), e.WireSignals().at(i).Channel(), &hit_x, &hit_y);
+      for (size_t i = 0; i < e.Signals().size(); i++) {
+  if (!wireIsDrawn[e.Signals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.Signals().at(i).Channel()]) {
+    if (e.Signals().at(i).Type() != Signal::HEADER && e.Signals().at(i).Type() != Signal::TRAILER) {
+      geo.GetHitXY(e.Signals().at(i).TDC(), e.Signals().at(i).Channel(), &hit_x, &hit_y);
       hit_model.push_back(new TEllipse(hit_x, hit_y, Geometry::radius, Geometry::radius));
       hit_model.back()->SetFillColor(kRed);
-      wireIsDrawn[e.WireSignals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.WireSignals().at(i).Channel()] = 1;
+      wireIsDrawn[e.Signals().at(i).TDC()*Geometry::MAX_TDC_CHANNEL + e.Signals().at(i).Channel()] = 1;
     }
   }
       }
@@ -362,8 +366,7 @@ namespace Muon {
       eCanv_tube_hist->SaveAs(canvas_output_name);
     }
 
-  }
-}
+  }// end void EventDisplay::DrawTubeHistAndEvent
 
 
 void EventDisplay::DrawTubeHist(Geometry &geo, TH2D* hist, TDirectory* outdir=NULL, Bool_t noROOT = kFALSE) {
@@ -463,5 +466,5 @@ void EventDisplay::DrawTubeHist(Geometry &geo, TH2D* hist, TDirectory* outdir=NU
       eCanv_tube_hist->SaveAs(canvas_output_name);
     }  
 }
-
+}
 #endif

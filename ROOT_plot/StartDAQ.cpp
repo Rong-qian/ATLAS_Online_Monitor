@@ -124,9 +124,6 @@ void StartDAQ() {
             //       out
             // TODO: Include a setting regarding whether to warn for slow
             //       frames
-            // TODO: A lot of this framerate stuff really is overkill. It was
-            //       useful for checking run speed, but we know things are fast
-            //       enough now
             int frameNum      = 0;
             double slowFrames = 0;
             while(!Terminator::getInstance().isTerminated()) {
@@ -205,6 +202,15 @@ void StartDAQ() {
                 );
 
             }
+
+            // TODO: Make sure all windows are closed without double deletion.
+            //       Otherwise we will find that the GUI will stay open until
+            //       every thread terminates.
+            //         -- Really though we want the data capture thread to
+            //            terminate immediately
+            //         -- A window manager might be useful here. ExitAll
+            //            can delete all the windows, and then we can just
+            //            rewire the normal CloseWindow signal
 
         })
 

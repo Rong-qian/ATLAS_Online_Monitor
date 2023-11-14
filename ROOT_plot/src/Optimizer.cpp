@@ -57,23 +57,24 @@ namespace Muon {
     void              increment      (double dist, double res, double err, Hit h);
     void              resetMatrices  ();
     Bool_t            skip        ();
-
+    double             chiSq;
+    double             DOF;
     vector<Optimizer*> dependencies;
     vector<Optimizer*> simultaneous;
+    int                hitIndex;
+    double             maxResidual;
+    Event*             e;
+
   private:
 
     TTree*             dataset;
-    Event*             e;
-    double             chiSq;
-    double             DOF;
-    double             maxResidual;
+
     int                indexLow;
     int                indexHigh;
     int                maxIter   = 1000;
     int                iteration = 0;
     double             tolerance = 1e-3;
     vector<int>        ignore;
-    int                hitIndex;
     Bool_t             verbose;
 
     TMatrixD           G, Y;

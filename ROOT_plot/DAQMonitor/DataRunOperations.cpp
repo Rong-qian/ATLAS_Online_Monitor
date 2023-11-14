@@ -143,9 +143,7 @@ void DataRunIMPL::initializeDataStream(LockableStream &dataStream) {
             fileStream = nullptr;
 
             ErrorLogger::getInstance().logError(
-                string("Couldn't open file ") + state.persistentState.inputFilename,
-                "runOperations",
-                FATAL
+                string("Couldn't open file ") + state.persistentState.inputFilename
             );
 
             cout << "Aborted run!" << endl;
@@ -293,6 +291,7 @@ void DataRun::startRun() {
         decodeThread     .join();
 
         // TODO: Again, I would rather avoid caring about the type of stream.
+        // TODO: We don't really need to lock here
         dataStream.lock();
         fstream *temp = dynamic_cast<fstream*>(dataStream.stream);
         if(temp) {

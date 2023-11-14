@@ -106,6 +106,7 @@
 
 #include "src/DataModel/DAQData.cpp"
 #include "src/ProgramControl/Terminator.cpp"
+#include "src/DisplayCanvas.cpp"
 
 using namespace std;
 
@@ -118,7 +119,7 @@ namespace MonitorHooks {
 	void beforeUpdateData(const DAQData &data);
 	void updatedData     (const DAQData &data);
 
-	
+	DisplayCanvas *displaycanvas;
 }
 }
 
@@ -127,9 +128,7 @@ namespace MonitorHooks {
 * before data capture and decoding begins.
 */
 void Muon::MonitorHooks::beforeStartRun(const DAQData &data) {
-
-
-
+	displaycanvas = new DisplayCanvas();
 }
 
 /**
@@ -192,8 +191,7 @@ void Muon::MonitorHooks::finishedRun(const DAQData &data) {
 	// For example:
 
 	if(!data.processedEvents.empty()) {
-
-		// cout << data.processedEvents.back().ID() << endl;
+		cout << data.processedEvents.back().ID() << endl;
 
 	}
 
@@ -263,7 +261,6 @@ void Muon::MonitorHooks::beforeUpdateData(const DAQData &data) {
 * is decoded and aggregated.
 */
 void Muon::MonitorHooks::updatedData(const DAQData &data) {
-
-
-
+	displaycanvas->UpdateCanvas(data);
+	
 }

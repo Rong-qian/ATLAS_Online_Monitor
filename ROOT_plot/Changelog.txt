@@ -1,37 +1,8 @@
 ## Known issues
 
 - Occasional segfaults occur when opening and closing windows.
-    -- Could this be related to signals not getting disconnected when the
-       windows are closed?
 - Run viewer becomes inaccessible when closed unless the run is restarted.
 - It is not obvious to user whether settings panel has been applied.
-- Error log window needs some work.
-
-## NOTE:
-
-- Good place to look for segfaults -- char array overflows
-
--------------------------------------------------------------------------------
-
-## 2023-11-13
-
-## Added
-
-- Added error log display option to canvas selector / window selector.
-- Added real data to the run stats window.
-- Added a basic error log window.
-- Added tracking for dropped signals and events to DAQData.
-- Added tracking for lost packets to DAQData.
-- Added 'error levels' to error logger.
-- Added color coding by level to the error log display.
-
-## Changed
-
-- Renamed CanvasSelector to WindowSelector.
-
-## Fixed
-
-- Fixed ambiguous warning message for TDC header/trailer mismatch.
 
 -------------------------------------------------------------------------------
 

@@ -82,9 +82,7 @@ void Muon::DataCapture::runDataCapture(LockableStream &dataStream, DAQData &data
     if(!fileWriter.is_open()) {
 
         ErrorLogger::getInstance().logError(
-            string("Failed to open output file: ") + outputFile,
-            "dataCapture",
-            FATAL
+            string("Failed to open output file: ") + outputFile
         );
         cout << "Aborted run!" << endl;
 
@@ -201,7 +199,7 @@ void Muon::DataCaptureIMPL::initializePCapSessionHandler(
 
     } catch(NetworkDeviceException &e) {
 
-        ErrorLogger::getInstance().logError(e.what(), "dataCapture", FATAL);
+        ErrorLogger::getInstance().logError(e.what());
         cout << "Aborted run!" << endl;
 
         throw UIException(

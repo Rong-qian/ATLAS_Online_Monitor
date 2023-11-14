@@ -1,5 +1,5 @@
 /**
- * @file Decoder.cpp
+ * @file Monitor.cpp
  *
  * @brief TODO: Write
  *
@@ -30,13 +30,19 @@
 //////////////////////// INTERFACE ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO: Rename Decoder methods to something semantically more appropriate
+// TODO: Preserve ability to read from a file source
 
-class Decoder {
+// TODO: Let the monitor just take in a data stream, and choose between an
+//       ifstream and another kind of stream at a higher level.
+
+/**
+ * Provides state and functionality for the online monitor.
+ */
+class Monitor {
 
 public:
 
-	Decoder(LockableStream &in, DAQData &dataOut);
+	Monitor(LockableStream &in, DAQData &dataOut);
 
 	bool isStale();
 	void refresh();
@@ -66,16 +72,16 @@ bool isEvent(const vector<Signal> &signals);
 /////////////////////// IMPLEMENTATION ////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Decoder::Decoder(LockableStream &in, DAQData &dataOut) 
+Monitor::Monitor(LockableStream &in, DAQData &dataOut) 
 	: reader(in), data(dataOut) {}
 
-bool Decoder::isStale() {
+bool Monitor::isStale() {
 
 	return reader.isReady();
 
 }
 
-void Decoder::refresh() {
+void Monitor::refresh() {
 
 	while(isStale()) {
 

@@ -12,7 +12,8 @@
  *       pcap_dispatch, so I've had to stick with static functions.
  *       As a result, there is a lot of static data that is shared
  *       between session handlers and needs to be reset every run
- *       with the static reset method. This is far from optimal.
+ *       with the static reset method. This is far from optimal, 
+ *       but any workaround will take too long to figure out.
  */
 
 // TODO: Separate data source/format-specific logic from data source/format
@@ -27,19 +28,12 @@
 #include <signal.h>
 #include <functional>
 
-#include "macros/ErrorLogger.cpp"
-
 #include "DAQMonitor/LockableStream.cpp"
 
 #include "DAQMonitor/EthernetCapture/src/PCapDevice.cpp"
 #include "DAQMonitor/EthernetCapture/src/NetworkDeviceException.cpp"
 
-// TODO: This is a little bit of a messy dependency to have at this level
-#include "src/DataModel/DAQData.cpp"
-
 using namespace std;
-
-const string PCAP_WARN = "dataCapture";
 
 const unsigned int WORD_SIZE = 5; // TODO: Make sure this and Signal's word size
                                   //       come from the same place
@@ -206,20 +200,10 @@ void PCapSessionHandler::packetListener(
 
 			if(packetNum != (lastPacket + 1) % 65536) {
 
-				int missingPackets = (packetNum - (lastPacket + 1)) % 65536;
+				int missingPackets = (packetNum - lastPacket) % 65536 + 1;
 
-				ErrorLogger::getInstance().logError(
-					string("WARNING -- ") + to_string(missingPackets) + " packets lost! Packet = "
-						+ to_string(packetNum) + ", Last = " + to_string(lastPacket),
-					PCAP_WARN,
-					ERROR
-				);
-
-				DAQData &data = DAQData::getInstance();
-
-				data.lock();
-				data.lostPackets += missingPackets;
-				data.unlock();
+				cout << "WARNING -- " << missingPackets << " packets lost! Packet = ";
+				cout << packetNum << ", Last = " << lastPacket << endl;
 
 			}
 
