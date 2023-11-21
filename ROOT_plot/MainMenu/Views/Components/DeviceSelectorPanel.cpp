@@ -14,6 +14,7 @@
 // TODO: Find a way to eliminate this include
 //         -- Collocate this component with the data capture module?
 #include "DAQMonitor/EthernetCapture/src/DeviceManager.cpp"
+#include "DAQMonitor/EthernetCapture/src/NetworkDeviceException.cpp"
 
 using namespace std;
 
@@ -110,9 +111,20 @@ DeviceSelector::~DeviceSelector() {
 void DeviceSelector::initialize() {
 
     DeviceManager devices;
-    devices.initialize();
 
-    vector<PCapDevice> deviceList = devices.getAllDevices();
+    vector<PCapDevice> deviceList;
+
+    try {
+
+        devices.initialize();
+
+        deviceList = devices.getAllDevices();
+
+    } catch (NetworkDeviceException &e) {
+
+        cout << e.what() << endl;
+
+    }
 
     dropdown->AddEntry("(None)", 0);
 

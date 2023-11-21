@@ -82,7 +82,7 @@ namespace Muon {
 		tp.SetRT(rtp);
 		tp.SetGEO(&Geometry::getInstance());
 		tp.setVerbose(0);
-
+  		tp.setMaxResidual(1000000);
 		TimeCorrection tc = TimeCorrection();
 		residuals = new TH1D("residuals", "Residuals;Residual[#mum];Number of hits/2#mum", 500, -500, 500);
 
@@ -128,16 +128,16 @@ namespace Muon {
 		}
 		for (int tdc_id = 0; tdc_id != Geometry::MAX_TDC; tdc_id++)
 		{
-			int local_tdc_id = tdc_id % 18;
+			int local_tdc_id = tdc_id % 24;
 			h_name.Form("tdc_%d_hit_rate", tdc_id);
 			p_tdc_hit_rate_graph[tdc_id] = new TH1F(h_name, TString::Format("tdc_%d_tdc_hit_rate;Channel No.;Rate(Hz)", local_tdc_id), 24, -0.5, 23.5);
-			if (tdc_id < 18)
+			if (tdc_id < 24)
 				p_tdc_hit_rate_graph[tdc_id]->SetFillColor(4);
 			else
 				p_tdc_hit_rate_graph[tdc_id]->SetFillColor(kRed);
 
 			p_tdc_hit_rate_graph[tdc_id]->SetBarWidth(0.4);
-			p_tdc_hit_rate_graph[tdc_id]->SetBarOffset(0.1 + 0.4 * (tdc_id < 18));
+			p_tdc_hit_rate_graph[tdc_id]->SetBarOffset(0.1 + 0.4 * (tdc_id < 24));
 			p_tdc_hit_rate_graph[tdc_id]->SetStats(0);
 
 			p_tdc_hit_rate_graph[tdc_id]->SetMaximum(1);
@@ -147,8 +147,8 @@ namespace Muon {
 				Geometry::MAX_TUBE_COLUMN, -0.5, Geometry::MAX_TUBE_COLUMN - 0.5,
 				Geometry::MAX_TUBE_LAYER, -0.5, Geometry::MAX_TUBE_LAYER - 0.5);
 
-		rate_canvas = new TCanvas("c3", "Hit Rate Plots", 2160, 0, 1800, 750);
-		rate_canvas->Divide(6, 2);
+		rate_canvas = new TCanvas("c3", "Hit Rate Plots", 2160, 0, 1800, 800);
+		rate_canvas->Divide(6, 4);
 		trigger_rate_canvas = new TCanvas("c4", "Trigger Board", 1440, 750, 400, 300);
 		residual_canvas = new TCanvas("c5", "Residuals", 2100, 900, 400, 300);
 		EDCanvas = new TCanvas("c6", "Event Display", 2700, 900, 800, 800);
@@ -162,21 +162,21 @@ namespace Muon {
 		{
 			if (Geometry::getInstance().IsActiveTDC(tdc_id) || tdc_id == Geometry::getInstance().TRIGGER_MEZZ)
 			{
-				int local_tdc_id = tdc_id % 18;
+				int local_tdc_id = tdc_id % 24;
 				if (tdc_id == Geometry::getInstance().TRIGGER_MEZZ)
 				{
 					trigger_rate_canvas->cd();
         			p_tdc_hit_rate_graph[tdc_id]->Draw("B");
 				}	
 				else
-				{
-					pad_num = 6 * ((local_tdc_id + 1) % 2) + (local_tdc_id / 2) + 1;
+				{	
+					pad_num = Geometry::getInstance().GetPad(local_tdc_id);
 					TString opts;
 					if (isDrawn[tdc_id])
 						opts = "same";
 					else
 						opts = "";
-					rate_canvas->cd(pad_num);
+					rate_canvas->cd(pad_num+1);
 					// gPad->SetLogy();
 					p_tdc_hit_rate_graph[tdc_id]->Draw(opts + " B");
 					
@@ -213,10 +213,11 @@ namespace Muon {
 		// Set y-position (fraction of pad size)
 		gStyle->SetStatX(0.9);
 		// Set x-position (fraction of pad size)
-		gStyle->SetStatW(0.25);
+		//gStyle->SetStatW(0.25);
 		// Set width of stat-box (fraction of pad size)
-		gStyle->SetStatH(0.25);
+		//->SetStatH(0.25);
 		// Set height of stat-box (fraction of pad size)
+		cout<<"Processing "<< data.totalEventCount <<" events \n"<<endl;
 
 		for (Int_t tdc_id = 0; tdc_id != Geometry::MAX_TDC; tdc_id++)
 		{
@@ -249,8 +250,8 @@ namespace Muon {
 		for (int tdc_id = 0; tdc_id != Geometry::MAX_TDC; tdc_id++)
 		{
 			string text_content;
-			int CSM = tdc_id >= 18;
-			int local_tdc_id = tdc_id % 18;
+			int CSM = tdc_id >= 24;
+			int local_tdc_id = tdc_id % 24;
 
 			if (Geometry::getInstance().IsActiveTDC(tdc_id) || tdc_id == Geometry::getInstance().TRIGGER_MEZZ)
 			{
@@ -262,7 +263,8 @@ namespace Muon {
 				}
 				else
 				{
-					rate_canvas->cd(6 * ((local_tdc_id + 1) % 2) + (local_tdc_id / 2) + 1);
+					pad_num = Geometry::getInstance().GetPad(local_tdc_id);
+					rate_canvas->cd(pad_num+1);					
 					text_content = "Entries = " + to_string((int)data.plots.p_tdc_adc_time[tdc_id]->GetEntries());
 				}
 				TString h_name;
@@ -304,7 +306,7 @@ namespace Muon {
 				xlabel->SetTextColor(kBlack);
 				TLine *l = new TLine(-0.5, 0.5, 23.5, 0.5);
 				l->Draw();
-          isDrawn[local_tdc_id] = 1;
+          	isDrawn[local_tdc_id] = 1;
 
 
 			}
@@ -324,30 +326,24 @@ namespace Muon {
 		rate_canvas->cd();
 		rate_canvas->Update();
 
-
-
-
-
 		// Event display
 		for (Event event : data.processedEvents){
-
 			DoHitFinding(&event, tc, 0, 0);
 			DoHitClustering(&event, Geometry::getInstance());
 			ed_event = event;
-
 			bool pass_event_check = kTRUE;
 			event.SetPassCheck(pass_event_check);
 			event.CheckClusterTime();
 			if (pass_event_check){
 				TTree *optTree = new TTree("optTree", "optTree");
+
 				optTree->Branch("event", "Event", &event);
 				optTree->Fill();
 				tp.setTarget(optTree);
 				tp.setRangeSingle(0);
 				tp.setIgnoreNone();
-				tp.optimize();
 				total_events_pass++;
-
+				tp.optimize();
 				for (Cluster c : event.Clusters())
 				{
 					for (Hit h : c.Hits())
@@ -395,13 +391,15 @@ namespace Muon {
 				}       // end for: layer
 
 				delete optTree;
-				if (pass_event_check && (total_events_pass % 100 == 0))
+				if (pass_event_check && (total_events_pass % 10000 == 1))
 				{
 					EDCanvas->cd();
 					ed_event.AddTrack(Track(tp.slope(), tp.y_int()));
 					ed->DrawEvent(ed_event, Geometry::getInstance(), NULL);
 					ed->Clear();
+					gSystem->Sleep(2000);
 				}
+
 				for (int iL = 0; iL < Geometry::MAX_TUBE_LAYER; ++iL)
 				{
 					for (int iC = 0; iC < Geometry::MAX_TUBE_COLUMN; ++iC)
@@ -420,9 +418,8 @@ namespace Muon {
 		residual_canvas->cd();
 		residuals->Draw();
 		residual_canvas->Update();
-      trigger_rate_canvas->cd();
-      trigger_rate_canvas->Update();
-      trigger_rate_canvas->Print("/atlas/data18a/rongqian/update/ATLAS_Online_Monitor/testtrr.png");
+		trigger_rate_canvas->cd();
+		trigger_rate_canvas->Update();
 
 		cout<<"Finish update canvas"<<endl;
 	} // End update canvas

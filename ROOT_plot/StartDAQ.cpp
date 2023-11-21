@@ -1,13 +1,13 @@
 /**
  * @file StartDAQ.cpp
  *
- * @brief TODO: Write
+ * @brief Entry point for the Phase 2 MiniDAQ online monitor.
  *
  * @author Robert Myers
  * Contact: romyers@umich.edu
  * 
  * NOTE: StartDAQ blocks SIGINT. Termination can be forced by
- *       typing CTRL+C twice.
+ *       entering CTRL+C twice.
  */
 
 // TODO: Consider an operator pattern where the operations file maintains a
@@ -148,9 +148,6 @@ void StartDAQ() {
 
                 } catch (UIException &e) {
 
-                    // TODO: More sophisticated error handling. We should
-                    //       be logging these errors too.
-                    // TODO: Multiple types of error titles
                     Error::popupAlert(
                         gClient->GetRoot(), "Error", e.what()
                     );

@@ -14,6 +14,8 @@
 #include "MainMenu/Views/Components/DataSourcePanel.cpp"
 #include "MainMenu/EntryOperations.cpp"
 
+#include "DAQMonitor/Views/RunView.cpp"
+
 #include "src/ProgramControl/Terminator.cpp"
 
 using namespace std;
@@ -35,13 +37,16 @@ public:
 
     virtual ~EntryView() override;
 
-    // OPERATIONS
+    // METHODS
 
     void disableStartButton();
     void enableStartButton ();
 
     void disableStopButton ();
     void enableStopButton  ();
+
+    void openRunViewer     ();
+    void closeRunViewer    ();
 
 private:
 
@@ -66,7 +71,7 @@ private:
 void EntryView::makeConnections() {
 
     UISignalBus &bus = UISignalBus::getInstance();
-
+    
     bus.Connect("onRunStop()", "EntryView"      , this           , "disableStopButton()");
     bus.Connect("onRunStop()", "EntryView"      , this           , "enableStartButton()");
     bus.Connect("onRunStop()", "DataSourcePanel", dataSourcePanel, "enable()"           );
@@ -77,7 +82,8 @@ void EntryView::makeConnections() {
 
     exitButton ->Connect("Clicked()", "EntryOperations", nullptr, "exitAll()");
 
-    startButton->Connect("Clicked()", "EntryOperations", nullptr, "startRun()");
+    startButton->Connect("Clicked()", "EntryOperations", nullptr, "startRun()"     );
+    startButton->Connect("Clicked()", "EntryView"      , this   , "openRunViewer()");
 
     stopButton->Connect("Clicked()", "EntryOperations" , nullptr, "stopRun()");
 
@@ -131,3 +137,16 @@ void EntryView::enableStartButton () { startButton->SetEnabled(true ); }
 
 void EntryView::disableStopButton () { stopButton->SetEnabled (false); }
 void EntryView::enableStopButton  () { stopButton->SetEnabled (true ); }
+
+void EntryView::openRunViewer() {
+
+    RunView *viewer = new RunView(gClient->GetRoot());
+
+    viewer->SetWindowName("Run Viewer");
+    viewer->MapSubwindows();
+    viewer->Resize(viewer->GetDefaultSize());
+    viewer->MapWindow();
+
+    // TODO: Don't open the RunViewer if the run doesn't start
+
+}

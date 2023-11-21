@@ -64,13 +64,21 @@ void DeviceManager::initialize() {
 
     }
 
+    if(devices == nullptr) {
+
+        throw NetworkDeviceException(
+            "No network devices found. Did you run with root privileges?"
+        );
+
+    }
+
 }
 
 PCapDevice DeviceManager::getDevice(int deviceNumber) {
 
     if(!devices) {
 
-        throw logic_error(
+        throw NetworkDeviceException(
             "DeviceManager::getDevice -- DeviceManager must be initialized before use."
         );
 

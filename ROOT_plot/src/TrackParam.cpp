@@ -215,12 +215,14 @@ namespace Muon {
 	npts++;
       }      
     }
-
     // keep track of n pts
     // iterate over 2^n tries, doing a fit each time
+    // max of n is 24. Above this the event may have multiply tracks and calculation is time-consuming
     double bestChiSq = DBL_MAX;
     double chiSq;
-    for (int bitmap = 0; bitmap < 1<<npts; bitmap++) {
+    int max_n = 24;
+    if (1<<npts < max_n){max_n = 1<<npts;} 
+    for (int bitmap = 0; bitmap < max_n; bitmap++) {
       // declare containers
       vector<double> xtrial = vector<double>(x.size());
       for (int i = 0; i < npts; i++) {

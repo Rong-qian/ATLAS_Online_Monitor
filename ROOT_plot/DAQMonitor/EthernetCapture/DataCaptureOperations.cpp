@@ -12,8 +12,6 @@
 #include <string>
 #include <fstream>
 
-#include <sys/stat.h>
-
 #include "macros/ErrorLogger.cpp"
 
 #include "DAQMonitor/EthernetCapture/src/PCapSessionHandler.cpp"
@@ -31,14 +29,17 @@ using namespace std;
 namespace Muon {
 namespace DataCapture {
 
-    void runDataCapture(LockableStream &dataStream, DAQData &data);
+    void runDataCapture(
+        LockableStream &dataStream, 
+        DAQData &data, 
+        string runLabel
+    );
 
 }
 namespace DataCaptureIMPL {
 
     bool   directoryExists             (const string       &path          );
     bool   createDirectory             (const string       &path          );
-    string getCurrentTimestamp         (const string       &format        );
     void   createIfMissing             (const string       &directoryName );
 
     void   initializePCapSessionHandler(PCapSessionHandler &sessionHandler);
@@ -50,7 +51,11 @@ namespace DataCaptureIMPL {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Muon::DataCapture::runDataCapture(LockableStream &dataStream, DAQData &data) {
+void Muon::DataCapture::runDataCapture(
+    LockableStream &dataStream, 
+    DAQData &data, 
+    string runLabel
+) {
 
     using namespace DataCaptureIMPL;
 
@@ -60,22 +65,14 @@ void Muon::DataCapture::runDataCapture(LockableStream &dataStream, DAQData &data
     PCapSessionHandler sessionHandler;
     initializePCapSessionHandler(sessionHandler);
 
-    // If this condition is true, we're not using ethernet 
-    // capture.
-
-    string runTimestamp = getCurrentTimestamp("%Y%m%d_%H%M%S");
-
-    // TODO: Add the run number to this
-    cout << endl << "Starting run: " << runTimestamp << endl; 
-
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
 
     createIfMissing("./data");
 
-    string outputFile("data/run_");
-    outputFile += runTimestamp;
+    string outputFile("data/");
+    outputFile += runLabel;
     outputFile += ".dat";
 
     ofstream fileWriter(outputFile);
@@ -154,20 +151,6 @@ bool Muon::DataCaptureIMPL::createDirectory(const string &path) {
     if(mkdir(path.data(), 0777) == 0) return true;
 
     return false;
-
-}
-
-string Muon::DataCaptureIMPL::getCurrentTimestamp(const string &format) {
-
-    char formatBuffer[40];
-    time_t sys_time;
-    struct tm *timeinfo;
-    sys_time = time(0);
-    timeinfo = localtime(&sys_time);
-    memset(formatBuffer, 0, sizeof(formatBuffer));
-    strftime(formatBuffer, 40, format.data(), timeinfo);
-
-    return string(formatBuffer);
 
 }
 

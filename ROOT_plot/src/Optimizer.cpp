@@ -272,7 +272,6 @@ namespace Muon {
   }
   
   double Optimizer::doOneIteration(Bool_t init=kTRUE) {
-
     resetMatrices();
     for (Optimizer* sim : simultaneous) sim->resetMatrices();
     double res, dist, err;

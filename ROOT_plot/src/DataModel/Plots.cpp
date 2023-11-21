@@ -20,10 +20,19 @@
 using namespace Muon;
 using namespace std;
 
+// TODO: Pull out initialization from default constructor, copy constructor,
+//       and copy assignment
+
 // NOTE: There should really only be one of those. DAQData holds it.
 struct Plots {
 
 	Plots();
+
+	Plots         (const Plots &other);
+	void operator=(const Plots &other) = delete; // TODO: It's a little bit
+	                                             //       weird to have a
+	                                             //       copy constructor but
+	                                             //       not copy assignment
 
 	TH1F *                 p_leading_time          ;
 	TH1F *                 p_trailing_time         ;
@@ -57,6 +66,61 @@ struct Plots {
 
 };
 
+Plots::Plots(const Plots &other) {
+
+	p_leading_time  = dynamic_cast<TH1F*>(other.p_leading_time ->Clone());
+	p_trailing_time = dynamic_cast<TH1F*>(other.p_trailing_time->Clone());
+
+	p_hits_distribution.reserve(Geometry::MAX_TUBE_LAYER);
+	for(int layer_id = 0; layer_id < Geometry::MAX_TUBE_LAYER; ++layer_id) {
+
+		p_hits_distribution.push_back(dynamic_cast<TH1F*>(other.p_hits_distribution[layer_id]->Clone()));
+
+	}
+
+	p_tdc_time              .resize (Geometry::MAX_TDC) ;
+	p_tdc_time_original     .resize (Geometry::MAX_TDC) ;
+	p_tdc_time_corrected    .resize (Geometry::MAX_TDC) ;
+	p_tdc_time_selected     .resize (Geometry::MAX_TDC) ;
+	p_adc_time              .resize (Geometry::MAX_TDC) ;
+
+	p_tdc_tdc_time_original .reserve(Geometry::MAX_TDC);
+	p_tdc_tdc_time_corrected.reserve(Geometry::MAX_TDC);
+	p_tdc_tdc_time_selected .reserve(Geometry::MAX_TDC);
+	p_tdc_adc_time          .reserve(Geometry::MAX_TDC);
+	p_tdc_channel           .reserve(Geometry::MAX_TDC);
+
+	p_adc_vs_tdc            .reserve(Geometry::MAX_TDC);
+
+	p_tdc_hit_rate          .resize (Geometry::MAX_TDC);
+
+	for(vector<double> &vec : p_tdc_hit_rate) {
+
+		vec.resize(Geometry::MAX_TDC_CHANNEL);
+
+	}
+
+	for(int tdc = 0; tdc < Geometry::MAX_TDC; ++tdc) {
+
+		p_tdc_adc_time          .push_back(dynamic_cast<TH1F*>(other.p_tdc_adc_time[tdc]          ->Clone()));
+		p_tdc_tdc_time_corrected.push_back(dynamic_cast<TH1F*>(other.p_tdc_tdc_time_corrected[tdc]->Clone()));
+
+		for(int channel = 0; channel < Geometry::MAX_TDC_CHANNEL; ++channel) {
+
+			p_tdc_time_corrected[tdc].push_back(dynamic_cast<TH1F*>(other.p_tdc_time_corrected[tdc][channel]->Clone()));
+			p_tdc_time[tdc]          .push_back(dynamic_cast<TH1F*>(other.p_tdc_time[tdc][channel]          ->Clone()));
+			p_adc_time[tdc]          .push_back(dynamic_cast<TH1F*>(other.p_adc_time[tdc][channel]          ->Clone()));
+
+		}
+
+	}
+
+	hitByLC     = dynamic_cast<TH2D*>(other.hitByLC    ->Clone());
+	badHitByLC  = dynamic_cast<TH2D*>(other.badHitByLC ->Clone());
+	goodHitByLC = dynamic_cast<TH2D*>(other.goodHitByLC->Clone());
+
+}
+
 Plots::Plots() {
 
 	TString plot_name_buffer;
@@ -65,7 +129,7 @@ Plots::Plots() {
 	p_trailing_time = new TH1F("trailing time spectrum", "trailing time spectrum", 100, 0, 1000);
 
 	p_hits_distribution.reserve(Geometry::MAX_TUBE_LAYER);
-	for(int layer_id = 0; layer_id != Geometry::MAX_TUBE_LAYER; ++layer_id) {
+	for(int layer_id = 0; layer_id < Geometry::MAX_TUBE_LAYER; ++layer_id) {
 
 		plot_name_buffer.Form("layer_%d_hits_distribution", layer_id);
 		p_hits_distribution.push_back(

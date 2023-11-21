@@ -9,10 +9,8 @@
 
 #pragma once
 
-#include "DAQMonitor/DataRunOperations.cpp"
-
-#include "DAQMonitor/Views/Components/CanvasSelector.cpp"
 #include "DAQMonitor/Views/Components/RunStats.cpp"
+#include "DAQMonitor/Views/Components/RunMenuBar.cpp"
 
 using namespace std;
 
@@ -26,8 +24,8 @@ private:
 
 	// VIEW
 
-	RunStats       *runStats      ;
-	CanvasSelector *canvasSelector;
+	RunMenuBar         *menuBar       ;
+	RunStats           *runStats      ;
 
 	// CONNECTIONS
 
@@ -41,17 +39,25 @@ void RunView::makeConnections() {
 	//       RunView stops the run while something else is stopping it or
 	//       after something else has already stopped it.
 	// Connect("CloseWindow()", "DataRun", nullptr, "stopRun()");
+	Connect("CloseWindow()", "RunStats", runStats, "teardown()");
 
 }
 
-RunView::RunView(const TGWindow *p) : TGMainFrame(p) {
+RunView::RunView(const TGWindow *p) 
+	: TGMainFrame(p, 1, 1, kFixedSize) {
+
+	menuBar = new RunMenuBar(this);
+	AddFrame(menuBar, new TGLayoutHints(kLHintsTop | kLHintsLeft));
 
 	runStats = new RunStats(this);
-	AddFrame(runStats, new TGLayoutHints(kLHintsCenterX, 5, 5, 5, 5));
-
-	canvasSelector = new CanvasSelector(this, "Select Plots");
-	AddFrame(canvasSelector, new TGLayoutHints(kLHintsCenterX));
+	AddFrame(
+		runStats, new TGLayoutHints(
+			kLHintsExpandX | kLHintsExpandY
+		)
+	);
 
 	makeConnections();
+
+	Resize(300, 250);
 
 }

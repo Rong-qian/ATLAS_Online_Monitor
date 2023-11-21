@@ -46,7 +46,8 @@ namespace State {
 
 	struct TemporaryState {
 
-		bool runStarted = false;
+		bool   runStarted = false;
+		string runLabel   = ""   ;
 
 	};
 

@@ -3,6 +3,110 @@
 - Occasional segfaults occur when opening and closing windows.
 - Run viewer becomes inaccessible when closed unless the run is restarted.
 - It is not obvious to user whether settings panel has been applied.
+- Error log window segfaults inconsistently when closed with the close button.
+- Saving plots is slow. Batch mode greatly speeds things up, but also breaks 
+  the GUI.
+- Plot saving does not interact well with TDC and ADC plot windows opened 
+  after the save is started.
+- Plot saving blocks the decoder.
+- Closing a progress bar window causes a segfault.
+- PlotSavingOperations still depends on progress bar view.
+- Undefined behavior when pressing 'Save Plot' twice. We need to disable the
+  button while plots are being saved. Use a flag in DAQState like we do for
+  startRun.
+- UI updates are slow when plots are open.
+- RunStats is not correctly formatted until the first UI onUpdate() signal
+- ADC and TDC channel plots do not uncheck their menu options when closed from
+  the exit button.
+- Weird things happen when we try to make onUpdate() only run at the end of a
+  nontrivial iteration of the decode loop.
+
+## NOTE:
+
+- Good place to look for segfaults -- char array overflows
+
+-------------------------------------------------------------------------------
+
+## 2023-11-16
+
+## Added
+
+- Added a 'Close All' option in the Run View's view menu that closes all open
+  data displays.
+- Added a CanvasWindow class to abstract out a lot of canvas-related
+  boilerplate in plotting.
+
+## Changed
+
+- Removed dependence on a histogram vector from plotHistograms.
+- Started removing view dependencies from operations in order to decouple
+  the interface from the underlying program.
+    -- The Run View is now started directly from the Main Menu view.
+    -- All Run displays are now started directly from the RunMenuBar, except
+       for the save progress bar.
+    -- Removed ErrorOperations.cpp.
+    -- Removed PlottingOperations.cpp.
+
+## Notes
+
+- Spent most of the day trying to figure out how to consistently detect when
+  a plot window is closed in order to uncheck the related menu option and 
+  stop updates for the window. The issue is that the CloseWindow() signal,
+  besides behaving a bit unintelligibly, does not allow passing a parameter
+  to its slot. This seems to force hardcoding separate functions for each
+  plot window you might have, though I am considering some workarounds using
+  IDs for each window.
+
+-------------------------------------------------------------------------------
+
+## 2023-11-15
+
+## Added
+
+- Added and implemented a module for saving plots to disk.
+- Added an interface to the Run Viewer for saving plots to disk.
+- Added a progress bar to the plot saving interface.
+- Added a menu bar to Run Viewer.
+- Added per-TDC channel plots
+
+## Changed
+
+- DAT file naming is set up in DataRunOperations now instead of 
+  DataCaptureOperations.
+- Replaced the radial window selector in the Run Viewer with a menu bar
+  popup.
+
+-------------------------------------------------------------------------------
+
+## 2023-11-14
+
+## Changed
+
+- DeviceManager now produces a warning when pcap loads devices successfully, but
+  does not find any devices. This can happen e.g. if the program is not run
+  with root privileges.
+
+-------------------------------------------------------------------------------
+
+## 2023-11-13
+
+## Added
+
+- Added error log display option to canvas selector / window selector.
+- Added real data to the run stats window.
+- Added a basic error log window.
+- Added tracking for dropped signals and events to DAQData.
+- Added tracking for lost packets to DAQData.
+- Added 'error levels' to error logger.
+- Added color coding by level to the error log display.
+
+## Changed
+
+- Renamed CanvasSelector to WindowSelector.
+
+## Fixed
+
+- Fixed ambiguous warning message for TDC header/trailer mismatch.
 
 -------------------------------------------------------------------------------
 
