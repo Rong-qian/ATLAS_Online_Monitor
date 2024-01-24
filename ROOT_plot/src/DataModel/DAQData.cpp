@@ -27,6 +27,11 @@ struct DAQData {
     // already performed.
     vector<Event> processedEvents;
 
+    // A vector of the fully processed and populated events decoded in the
+    // last decode iteration, with hit finding already performed.
+    // Excludes empty events.
+    vector<Event> newEvents;
+
     // A struct of histograms containing aggregate event data. See
     // src/DataModel/Plots.cpp.
     Plots plots;
@@ -53,7 +58,6 @@ struct DAQData {
 private:
 
     DAQData();
-
     mutable mutex dataLock;
 
 };
@@ -79,7 +83,6 @@ void DAQData::clear () {
 
     processedEvents.clear();
     plots.clear();
-
     totalEventCount = 0;
     packetCount     = 0;
 

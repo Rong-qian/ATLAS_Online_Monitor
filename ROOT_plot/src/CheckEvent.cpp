@@ -31,14 +31,14 @@ using namespace Muon;
 bool CheckEvent(Event e, Geometry geo) {
 
   // need precisely one trigger
-  if (e.TriggerHits().size() != 1) 
-    return NOTPASTEVENTCHECK;
+  //if (e.TriggerHits().size() != 1) 
+  //  return NOTPASTEVENTCHECK;
 
   // need at least 4 wire hits
-  if (e.WireHits().size() < MIN_HITS_NUMBER)
+  if (e.Hits().size() < MIN_HITS_NUMBER)
     return NOTPASTEVENTCHECK;
 
-  if (e.WireHits().size() > MAX_HITS_NUMBER) 
+  if (e.Hits().size() > MAX_HITS_NUMBER) 
     return NOTPASTEVENTCHECK;
   
   // need precisely one cluster in each multilayer
@@ -59,12 +59,12 @@ bool CheckEvent(Event e, Geometry geo) {
   double max_time = 0;
   double min_time = 2e100;
 
-  for (int i = 0; i < e.WireHits().size(); i++) {
-    if (e.WireHits().at(i).TDCTime() > max_time) {
-      max_time = e.WireHits().at(i).TDCTime();
+  for (int i = 0; i < e.Hits().size(); i++) {
+    if (e.Hits().at(i).TDCTime() > max_time) {
+      max_time = e.Hits().at(i).TDCTime();
     }
-    if (e.WireHits().at(i).TDCTime() < min_time) {
-      min_time = e.WireHits().at(i).TDCTime();
+    if (e.Hits().at(i).TDCTime() < min_time) {
+      min_time = e.Hits().at(i).TDCTime();
     }
   }
   if ((max_time - min_time < MAX_TIME_DIFFERENCE) && (max_time - min_time > 0))

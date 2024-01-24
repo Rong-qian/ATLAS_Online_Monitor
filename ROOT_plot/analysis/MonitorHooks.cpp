@@ -128,7 +128,7 @@ namespace MonitorHooks {
 * before data capture and decoding begins.
 */
 void Muon::MonitorHooks::beforeStartRun(const DAQData &data) {
-	displaycanvas = new DisplayCanvas();
+	displaycanvas = new DisplayCanvas(data);
 }
 
 /**
@@ -137,7 +137,6 @@ void Muon::MonitorHooks::beforeStartRun(const DAQData &data) {
 void Muon::MonitorHooks::startedRun(const DAQData &data) {
 
 	// TERMINATOR EXAMPLE:
-
 	// Start a thread
 	thread t([]() {
 
@@ -192,7 +191,6 @@ void Muon::MonitorHooks::finishedRun(const DAQData &data) {
 
 	if(!data.processedEvents.empty()) {
 		cout << data.processedEvents.back().ID() << endl;
-
 	}
 
 	// If you need to do something that takes a long time, you can
@@ -260,7 +258,6 @@ void Muon::MonitorHooks::beforeUpdateData(const DAQData &data) {
 * This is called at the end of each decode loop, after captured data
 * is decoded and aggregated.
 */
-void Muon::MonitorHooks::updatedData(const DAQData &data) {
-	displaycanvas->UpdateCanvas(data);
-	
+void Muon::MonitorHooks::updatedData(const DAQData &data) {		
+		displaycanvas->UpdateCanvas(data);
 }

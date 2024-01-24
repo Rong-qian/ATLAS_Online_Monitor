@@ -212,7 +212,6 @@ namespace Muon {
     if (verbose)  cout << "Optimizing..." << endl;
 
     while (maxChange > tolerance && iteration < maxIter) {
-      cout.setstate(std::ios_base::failbit);
       maxChange = doOneIteration(init);
       cout.clear();
       if (verbose) {
@@ -310,7 +309,6 @@ namespace Muon {
 	} // end for: clusters
       } // end if: event passed cuts
     } // end for: all hits in dataset
-
     double maxDelta = updateParam();
     double simDelta;
     for (Optimizer* sim : simultaneous) {      
@@ -321,7 +319,6 @@ namespace Muon {
   }
 
   double Optimizer::updateParam() {
-    
     DOF -= this->size();
 
     // update the parameterization

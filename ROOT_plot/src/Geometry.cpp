@@ -49,7 +49,8 @@ namespace Muon {
     int    MultiLayer        (Cluster c) const;
     int    MultiLayer        (int layer) const;
     int    GetRunN           () const;
-    int    GetPad            (int local_tdc_id) ;
+	int    GetPad            (int local_tdc_id) ;
+			void   GetHitXY_LC       (unsigned int hitL, unsigned int hitC, double *hitX, double *hitY) const;
 
     static const Int_t MAX_TDC         = 24;
     static const Int_t MAX_TDC_CHANNEL = 24;
@@ -105,25 +106,27 @@ namespace Muon {
     TRIGGER_MEZZ = 18;
 
     for (int i = 0; i < Geometry::MAX_TDC_CHANNEL; i++) {
-      hit_layer_map[i] = i%4;
-      hit_column_map[i] = 5 - i/4;
+      hit_layer_map[i] = (i+2)%4;
+      hit_column_map[i] = i/4;
     }
     for (int i = 0; i < Geometry::MAX_TDC; i++) {
       TDC_ML[i]  = 0;
       TDC_COL[i] = 0;
     }
 
+    double hitX, hitY,center_x,center_y;
+    GetHitXY_LC(Geometry::MAX_TUBE_LAYER-1, Geometry::MAX_TUBE_COLUMN-1, &hitX, &hitY);
     track_corner_x[0] = 0;
-    track_corner_x[1] = 800;
+    track_corner_x[1] = hitX+radius*1.1;
     track_corner_y[0] = 0;
-    track_corner_y[1] = 320;
+    track_corner_y[1] = hitY+radius*1.1;
+
     axes.push_back(new TGraph(2, track_corner_x, track_corner_y));
 
     // create the background of the event display: the outlines of the tubes
-    for (Int_t layer_id = 0; layer_id != Geometry::MAX_TUBE_LAYER/2; layer_id++) {
+    for (Int_t layer_id = 0; layer_id != Geometry::MAX_TUBE_LAYER; layer_id++) {
       for (Int_t column_id = 0; column_id != Geometry::MAX_TUBE_COLUMN; column_id++) {
-        center_x = radius + column_id * column_distance + ((layer_id + 1) % 2) * column_distance / 2.0;
-        center_y = radius + layer_id * layer_distance;
+	      GetHitXY_LC(layer_id, column_id, &center_x, &center_y);
         drawable.push_back(new TEllipse(center_x, center_y, radius, radius));
 
         if ((column_id / 6) % 2 == 0) {
@@ -131,17 +134,7 @@ namespace Muon {
         }
       }
     }
-    for (Int_t layer_id = Geometry::MAX_TUBE_LAYER/2; layer_id != Geometry::MAX_TUBE_LAYER; layer_id++) {
-      for (Int_t column_id = 0; column_id != Geometry::MAX_TUBE_COLUMN; column_id++) {
-        center_x = radius + column_id * column_distance + ((layer_id + 1) % 2) * column_distance / 2.0;
-        center_y = radius + (layer_id - Geometry::MAX_TUBE_LAYER/2) * layer_distance + ML_distance;
-        drawable.push_back(new TEllipse(center_x, center_y, radius, radius));
 
-        if ((column_id / 6) % 2 == 0) {
-          drawable.at(layer_id*Geometry::MAX_TUBE_COLUMN + column_id)->SetFillColor(kGray);
-        }
-      }
-    }
 
     axes.at(0)->SetTitle("event");
     axes.at(0)->SetMarkerStyle(0);
@@ -213,9 +206,16 @@ namespace Muon {
     int hitL, hitC;
     GetHitLayerColumn(tdc_id, channel_id, &hitL, &hitC);
     
-    *hitX = Geometry::radius + hitC * column_distance + ((hitL + 1) % 2) * column_distance / 2.0;
+    *hitX = Geometry::radius + hitC * column_distance + (((hitL) % 2)) * column_distance / 2.0;
     *hitY = Geometry::radius + hitL * layer_distance  + (224.255-4*layer_distance)*TDC_ML[tdc_id];
   }    
+
+	void Geometry::GetHitXY_LC(unsigned int hitL, unsigned int hitC, double *hitX, double *hitY) const {
+		// get hit layer and column
+			*hitX = Geometry::radius + hitC * column_distance + (hitL % 2) * column_distance / 2.0;
+			*hitY = Geometry::radius + hitL * layer_distance  + (ML_distance-4*layer_distance)*(hitL >= 4);
+	}    
+
 
   int Geometry::MultiLayer(Cluster c) const {
     int hitL, hitC;
@@ -232,26 +232,19 @@ namespace Muon {
       adj[i].reset();
     }
     int hitL1, hitC1, hitL2, hitC2;
+    double x1,x2,y1,y2;
     for (int tdc1 = 0; tdc1 < Geometry::MAX_TDC; tdc1++) {
       for (int ch1 = 0; ch1 < Geometry::MAX_TDC_CHANNEL; ch1++) {
       	GetHitLayerColumn(tdc1, ch1, &hitL1, &hitC1);
+        GetHitXY(tdc1,ch1,&x1,&y1);
       	for (int tdc2 = 0; tdc2 < Geometry::MAX_TDC; tdc2++) {
       	  for (int ch2 = 0; ch2 < Geometry::MAX_TDC_CHANNEL; ch2++) {
       	    GetHitLayerColumn(tdc2, ch2, &hitL2, &hitC2);
-      	    if ((hitL1< 4 && hitL2< 4) || (hitL1>=4 && hitL2>=4)) { // must cluster within same multilayer
-      	      if ((hitC1 == hitC2) && (hitL1==hitL2+1 || hitL1==hitL2-1)) {
+                    GetHitXY(tdc2,ch2,&x2,&y2);
+
+      	      if (TMath::Sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)) < 1.5 * Geometry::layer_distance) {
       		      adj[tdc1*Geometry::MAX_TDC_CHANNEL + ch1][tdc2*Geometry::MAX_TDC_CHANNEL + ch2] = 1;
       	      }
-      	      else if ((hitL1==hitL2) && (hitC1==hitC2+1 || hitC1==hitC2-1)) {
-      		      adj[tdc1*Geometry::MAX_TDC_CHANNEL + ch1][tdc2*Geometry::MAX_TDC_CHANNEL + ch2] = 1;
-      	      }
-      	      else if ((hitL1%2==1) && (hitC1==hitC2+1) && (hitL1==hitL2+1 || hitL1==hitL2-1)) {
-      		      adj[tdc1*Geometry::MAX_TDC_CHANNEL + ch1][tdc2*Geometry::MAX_TDC_CHANNEL + ch2] = 1;
-      	      }
-      	      else if ((hitL1%2==0) && (hitC1==hitC2-1) && (hitL1==hitL2+1 || hitL1==hitL2-1)) {
-      		      adj[tdc1*Geometry::MAX_TDC_CHANNEL + ch1][tdc2*Geometry::MAX_TDC_CHANNEL + ch2] = 1;
-      	      }
-	    }
 	  }
 	}
       }
@@ -286,23 +279,24 @@ namespace Muon {
   int  Geometry::GetRunN() const {
     return runN;
   }
-  int    Geometry::GetPad(int local_tdc_id) 
-{
-    if (local_tdc_id<12){
-        if (local_tdc_id%2==1){
-            return local_tdc_id/2;}
-        else{
-            return (local_tdc_id+12)/2;
-        }
-    }
-    else {
-        if (local_tdc_id%2==1){
-            return (local_tdc_id-12)/2+12;}
-        else{
-            return (local_tdc_id)/2+12;
-        }
-    }
-}
+
+	int    Geometry::GetPad(int local_tdc_id) 
+	{
+		if (local_tdc_id<12){
+			if (local_tdc_id%2==1){
+				return local_tdc_id/2;}
+			else{
+				return (local_tdc_id+12)/2;
+			}
+		}
+		else {
+			if (local_tdc_id%2==1){
+				return (local_tdc_id-12)/2+12;}
+			else{
+				return (local_tdc_id)/2+12;
+			}
+		}
+	}
 
   void Geometry::SetRunN(int runNum) {
     // runN = runNum;

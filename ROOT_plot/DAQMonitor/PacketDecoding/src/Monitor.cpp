@@ -124,6 +124,10 @@ void Monitor::refresh() {
 
 	}
 
+	data.lock();
+	data.newEvents.clear();
+	data.unlock();
+
 	for(Event &e : eventBuffer) {
 
 		// Condition ignores empty events
@@ -133,6 +137,7 @@ void Monitor::refresh() {
 
 			data.lock();
 			data.processedEvents.push_back(e);
+			data.newEvents.push_back(e);
 			data.plots.binEvent(e);
 			data.unlock();
 
