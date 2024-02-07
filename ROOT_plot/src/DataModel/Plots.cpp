@@ -78,7 +78,8 @@ struct Plots {
 	RTParam * 			   rtp					   ;
 	EventDisplay *		   ed					   ;
 	Event 				   ed_event				   ;
-	vector<Event>          ed_events			   ;
+	vector<Event>*         ed_events_ptr		   ;
+	vector<Event> 		   ed_events_buffer;
 
 	TrackParam 			   tp					   ;
 	TimeCorrection         tc					   ;
@@ -312,6 +313,7 @@ void Plots::binEvent(const Event &e) {
 		int panelIndex = hit.TDC() + 1;
 
 	}
+
 	rtp = new RTParam(Geometry::getInstance());
 	tp.SetRT(rtp);
 	tp.SetGEO(&Geometry::getInstance());
@@ -386,26 +388,19 @@ void Plots::binEvent(const Event &e) {
 					{
 						if (nHits.at(iL).at(iC))
 						{	
-
 							tube_efficiency->SetBinContent(iC + 1, iL + 1, nHits[iL][iC] / (nHits[iL][iC] + nMiss[iL][iC]));
 						}
 					}
 				}
-
-
 		delete optTree;
-		//rtp->~RTParam();
-		//tp.~TrackParam();
-		//tc.~TimeCorrection();
+
 		if (ed_event_counter%ed_event_rate==0)
 		{
 			ed_event.AddTrack(Track(tp.slope(), tp.y_int()));
-			ed_events.push_back(ed_event);
+			ed_events_buffer.push_back(ed_event);
 		}
-	}
-	if (ed_event_counter%1000 == 0){
-		cout<<"ed_event_counter:"<<ed_event_counter<<endl;
-	}
+	ed_events_ptr = &ed_events_buffer;
+	}//end for if (pass_event_check)
 }
 
 
@@ -459,12 +454,16 @@ void Plots::clear() {
 
 	delete p_tdc_hit_rate_graph;
 	p_tdc_hit_rate_graph = nullptr;
-	// TODO: Remake the hit rate graph
+	delete ed_events_ptr;
+	ed_events_ptr = nullptr;
 
+	// TODO: Remake the hit rate graph
 
 	hitByLC    ->Reset();
 	badHitByLC ->Reset();
 	goodHitByLC->Reset();
 	residuals   ->Reset();
 	tube_efficiency ->Reset();
+	ed_events_buffer.clear();
+
 }

@@ -60,9 +60,9 @@ namespace Muon {
 	};
 
 	DisplayCanvas::DisplayCanvas(const DAQData &data){
-		residual_canvas = new TCanvas("c5", "Residuals", 2100, 900, 400, 300);
-		EDCanvas = new TCanvas("c6", "Event Display", 2700, 900, 1200, 800);
-		eff_canvas = new TCanvas("C7", "Efficiency", 2300, 900, 400, 300);
+		residual_canvas = new TCanvas("c1", "Residuals", 2100, 900, 400, 300);
+		EDCanvas = new TCanvas("c2", "Event Display", 2700, 900, 1200, 800);
+		eff_canvas = new TCanvas("c3", "Efficiency", 2300, 900, 400, 300);
 
 		ed = new EventDisplay();
 		ed->SetCanvas(EDCanvas);
@@ -101,7 +101,7 @@ namespace Muon {
 		residual_canvas->Update();
 		eff_canvas->Modified();
 		eff_canvas->Update();
-		for (Event ed_event:data.plots.ed_events)
+		for (Event ed_event:*data.plots.ed_events_ptr)
 		{
 			EDCanvas->cd();
 			ed->DrawEvent(ed_event, Geometry::getInstance(), NULL);
@@ -109,7 +109,6 @@ namespace Muon {
 			ed->Clear();
 			gSystem->Sleep(4000);
 		}
-		//data.plots.ed_events->clear();
 	} // End update canvas
 }
 void DisplayCanvas::lock  () const { displayLock.lock  (); }
